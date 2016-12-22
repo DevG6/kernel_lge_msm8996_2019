@@ -65,7 +65,7 @@ obj-$(CONFIG_SERIAL_MSM) += msm_serial.o
 ifndef CONFIG_MACH_LGE
 obj-$(CONFIG_SERIAL_MSM_HS) += msm_serial_hs.o
 else
-obj-$(CONFIG_SERIAL_MSM_HS) += msm_serial_hs_lge.o
+obj-$(CONFIG_SERIAL_MSM_HS) += msm_serial_hs_brcmbt.o
 endif
 #[H1_BT_BRINGUP_E]
 obj-$(CONFIG_SERIAL_MSM_HSL) += msm_serial_hs_lite.o
