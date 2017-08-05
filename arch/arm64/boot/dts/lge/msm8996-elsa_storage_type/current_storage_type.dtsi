@@ -10,6 +10,7 @@
  * GNU General Public License for more details.
  */
 
+<<<<<<< HEAD
 /* Current storage type is UFS */
 
 &ufs_ice {
@@ -72,3 +73,6 @@
 	/* H+ hw - invert signal by FET - UFS_RESET_N is low active */
 	ufsreset-gpios = <&tlmm 74 0x0>;
 };
+=======
+#include "ufs/msm8996-elsa_ufs.dtsi"
+>>>>>>> 430c746812c... arm64: lge: Add elsa_storage_type
