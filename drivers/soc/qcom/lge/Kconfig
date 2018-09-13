@@ -36,6 +36,32 @@ config LGE_MSM8996_FLUSH_WA
 		MSM8996 has timing issue sometimes.
 		This feature prevents timing issue as inserting flush.
 
+config LGE_BOOT_LOCKUP_DETECT
+	bool "Support to detect lockup during powering on"
+	default n
+	depends on LGE_HANDLE_PANIC
+	help
+	  For detecting lockup in boot , use simple detector which
+	  raise crash when expired some period after boot.
+
+config LGE_REBOOT_LOCKUP_DETECT
+	bool "Support to detect lockup during powering off"
+	default n
+	depends on LGE_HANDLE_PANIC
+	help
+	  For detecting lockup in reboot or shutdown, use simple
+	  detector which raise crash when expired some period after
+	  reboot like system call.
+
+config LGE_POWER_ONOFF_LOCKUP_DEBUG
+	bool "Support to debug lockup during powering off"
+	default n
+	depends on LGE_HANDLE_PANIC
+	help
+	  For debugging lockup in reboot or shutdown, use simple
+	  detector which raise crash when expired some period after
+	  reboot like system call.
+
 
 endmenu
 
