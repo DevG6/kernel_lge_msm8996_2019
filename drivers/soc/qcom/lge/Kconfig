@@ -62,6 +62,13 @@ config LGE_POWER_ONOFF_LOCKUP_DEBUG
 	  detector which raise crash when expired some period after
 	  reboot like system call.
 
+config LGE_BOOTLOADER_LOG
+	tristate "Support LGE bootloader log"
+	default n
+	depends on MACH_LGE
+	help
+	  LGE bootloader log
+
 
 endmenu
 
