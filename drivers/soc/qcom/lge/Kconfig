@@ -69,6 +69,13 @@ config LGE_BOOTLOADER_LOG
 	help
 	  LGE bootloader log
 
+config LGE_EARJACK_DEBUGGER
+	bool "Earjack UART debugger support"
+	default n
+	depends on MACH_LGE
+	help
+	  Support earjack type UART debugger cable
+
 
 endmenu
 
