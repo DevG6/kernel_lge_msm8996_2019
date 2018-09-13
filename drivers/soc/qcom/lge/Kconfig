@@ -12,6 +12,30 @@ config LGE_HANDLE_PANIC
 	help
 	  LGE Crash Handler
 
+config LGE_MSM8996_ISB_WA
+	bool "Support ISB workaround for prevent MSM8996 timing issue"
+	default n
+	depends on MACH_MSM8996_LUCYE
+	help
+		MSM8996 has timing issue sometimes.
+		This feature prevents timing issue as inserting isb().
+
+config LGE_MSM8996_NOP_WA
+	bool "Support NOP workaround for prevent MSM8996 timing issue"
+	default n
+	depends on MACH_MSM8996_LUCYE
+	help
+		MSM8996 has timing issue sometimes.
+		This feature prevents timing issue as inserting nop().
+
+config LGE_MSM8996_FLUSH_WA
+	bool "Support flush workaround for prevent MSM8996 timing issue"
+	default n
+	depends on MACH_MSM8996_LUCYE
+	help
+		MSM8996 has timing issue sometimes.
+		This feature prevents timing issue as inserting flush.
+
 
 endmenu
 
