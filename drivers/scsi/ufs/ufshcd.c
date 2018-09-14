@@ -3950,6 +3950,27 @@ int ufshcd_wait_for_doorbell_clr(struct ufs_hba *hba, u64 wait_timeout_us)
 		dev_err(hba->dev,
 			"%s: timedout waiting for doorbell to clear (tm=0x%x, tr=0x%x)\n",
 			__func__, tm_doorbell, tr_doorbell);
+#ifdef CONFIG_MACH_LGE
+		if(hweight32(tr_doorbell) >= 16)
+		{
+			hba->ufshcd_state = UFSHCD_STATE_RESET;
+			ufshcd_set_eh_in_progress(hba);
+
+			spin_unlock_irqrestore(hba->host->host_lock, flags);
+			ufshcd_release_all(hba);
+			up_write(&hba->clk_scaling_lock);
+			ufshcd_scsi_unblock_requests(hba);
+
+			ufshcd_reset_and_restore(hba);
+
+			ufshcd_scsi_block_requests(hba);
+			down_write(&hba->clk_scaling_lock);
+			ufshcd_hold_all(hba);
+			spin_lock_irqsave(hba->host->host_lock, flags);
+
+			ufshcd_clear_eh_in_progress(hba);
+		}
+#endif
 		ret = -EBUSY;
 	}
 out:
@@ -6365,7 +6386,10 @@ static int ufshcd_reset_and_restore(struct ufs_hba *hba)
 
 		err = ufshcd_host_reset_and_restore(hba);
 	} while (err && --retries);
-
+#ifdef CONFIG_MACH_LGE
+	if(err && retries <=0)
+		BUG_ON(1);
+#endif
 	/*
 	 * After reset the door-bell might be cleared, complete
 	 * outstanding requests in s/w here.
@@ -8169,10 +8193,17 @@ static int ufshcd_resume(struct ufs_hba *hba, enum ufs_pm_op pm_op)
 {
 	int ret;
 	enum uic_link_state old_link_state;
+#ifdef CONFIG_MACH_LGE
+	unsigned int retry_count = 1;
+	int err_bkops_check_status = 0;
+#endif
 
 	hba->pm_op_in_progress = 1;
 	old_link_state = hba->uic_link_state;
 
+#ifdef CONFIG_MACH_LGE
+resume_retry:
+#endif
 	ufshcd_hba_vreg_set_hpm(hba);
 	/* Make sure clocks are enabled before accessing controller */
 	ret = ufshcd_enable_clocks(hba);
@@ -8220,6 +8251,13 @@ static int ufshcd_resume(struct ufs_hba *hba, enum ufs_pm_op pm_op)
 	if (!ufshcd_is_ufs_dev_active(hba)) {
 		ret = ufshcd_set_dev_pwr_mode(hba, UFS_ACTIVE_PWR_MODE);
 		if (ret)
+#ifdef CONFIG_MACH_LGE
+			if (0 < retry_count--) {
+				dev_err(hba->dev, "[RESUME:retry]%s(%d):ret(%d), retry_count(%d)\n",
+						__func__, __LINE__, ret, retry_count);
+				goto resume_retry;
+			}
+#endif
 			goto set_old_link_state;
 	}
 
@@ -8230,7 +8268,15 @@ static int ufshcd_resume(struct ufs_hba *hba, enum ufs_pm_op pm_op)
 		 * If BKOPs operations are urgently needed at this moment then
 		 * keep auto-bkops enabled or else disable it.
 		 */
+#ifdef CONFIG_MACH_LGE
+		err_bkops_check_status =
+#endif
 		ufshcd_urgent_bkops(hba);
+
+#ifdef CONFIG_MACH_LGE
+		if (err_bkops_check_status && retry_count==0)
+			BUG();
+#endif
 
 	hba->clk_gating.is_suspended = false;
 	hba->hibern8_on_idle.is_suspended = false;
@@ -9053,6 +9099,12 @@ static int ufshcd_devfreq_get_dev_status(struct device *dev,
 	struct ufs_hba *hba = dev_get_drvdata(dev);
 	struct ufs_clk_scaling *scaling = &hba->clk_scaling;
 	unsigned long flags;
+
+#ifdef CONFIG_MACH_LGE
+	if (!hba)
+		return -EINVAL;
+#endif
+	scaling = &hba->clk_scaling;
 
 	if (!ufshcd_is_clkscaling_supported(hba))
 		return -EINVAL;

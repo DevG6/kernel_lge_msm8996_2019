@@ -56,6 +56,14 @@
 #include "mdss_mdp.h"
 #include "mdp3_ctrl.h"
 
+#ifdef CONFIG_MACH_LGE
+#include <soc/qcom/lge/board_lge.h>
+#include <soc/qcom/lge/lge_cable_detection.h>
+#endif
+#if defined(CONFIG_MACH_LGE)
+#include <linux/timer.h>
+#include <linux/debugfs.h>
+#endif
 #ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
 #define MDSS_FB_NUM 3
 #else
@@ -273,6 +281,30 @@ static int mdss_fb_notify_update(struct msm_fb_data_type *mfd,
 	return ret;
 }
 
+#if defined(CONFIG_MACH_LGE)
+#define BL_ENABLE_TIME_SIZE 19
+char bl_enable_time[] = "01-01 00:00:00.000";
+int prev_value = 0;
+
+static struct dentry *debugfs_bl_enable_time;
+
+static int bl_enable_time_show(struct seq_file *m, void *unused)
+{
+	return seq_printf(m, "%s\n", bl_enable_time);
+}
+
+static int bl_enable_time_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, bl_enable_time_show, NULL);
+}
+
+static const struct file_operations bl_enable_time_fops = {
+	.open		= bl_enable_time_open,
+	.read		= seq_read,
+	.llseek		= seq_lseek,
+};
+
+#endif // LGE_MACH
 static int lcd_backlight_registered;
 
 static void mdss_fb_set_bl_brightness(struct led_classdev *led_cdev,

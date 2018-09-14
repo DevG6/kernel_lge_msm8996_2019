@@ -245,7 +245,9 @@ struct ecryptfs_crypt_stat {
 	struct mutex cs_tfm_mutex;
 	struct mutex cs_hash_tfm_mutex;
 	struct mutex cs_mutex;
+#ifndef CONFIG_MACH_LGE
 	unsigned char cipher_mode[ECRYPTFS_MAX_CIPHER_NAME_SIZE + 1];
+#endif	
 };
 
 /* inode private data. */
@@ -346,8 +348,10 @@ struct ecryptfs_mount_crypt_stat {
 	unsigned char global_default_fn_cipher_name[
 		ECRYPTFS_MAX_CIPHER_NAME_SIZE + 1];
 	char global_default_fnek_sig[ECRYPTFS_SIG_SIZE_HEX + 1];
+#ifndef CONFIG_MACH_LGE	
 	unsigned char global_default_cipher_mode[ECRYPTFS_MAX_CIPHER_NAME_SIZE
 							 + 1];
+#endif
 };
 
 /* superblock private data. */
@@ -529,7 +533,7 @@ ecryptfs_dentry_to_lower_path(struct dentry *dentry)
 {
 	return &((struct ecryptfs_dentry_info *)dentry->d_fsdata)->lower_path;
 }
-
+#ifndef CONFIG_MACH_LGE
 /**
  * Given a cipher and mode strings, the function
  * concatenates them to create a new string of
@@ -576,7 +580,7 @@ static inline void ecryptfs_parse_full_cipher(
 	if (input_p != NULL && mode != NULL)
 		strlcpy(mode, input_p, ECRYPTFS_MAX_CIPHER_NAME_SIZE + 1);
 }
-
+#endif
 #define ecryptfs_printk(type, fmt, arg...) \
         __ecryptfs_printk(type "%s: " fmt, __func__, ## arg);
 __printf(1, 2)
@@ -625,10 +629,11 @@ int ecryptfs_encrypt_and_encode_filename(
 	const char *name, size_t name_size);
 struct dentry *ecryptfs_lower_dentry(struct dentry *this_dentry);
 void ecryptfs_dump_hex(char *data, int bytes);
+#ifndef CONFIG_MACH_LGE
 void ecryptfs_dump_salt_hex(char *data, int key_size,
 		const struct ecryptfs_crypt_stat *crypt_stat);
 extern void ecryptfs_dump_cipher(struct ecryptfs_crypt_stat *stat);
-
+#endif
 int virt_to_scatterlist(const void *addr, int size, struct scatterlist *sg,
 			int sg_size);
 int ecryptfs_compute_root_iv(struct ecryptfs_crypt_stat *crypt_stat);
@@ -772,6 +777,7 @@ int ecryptfs_set_f_namelen(long *namelen, long lower_namelen,
 int ecryptfs_derive_iv(char *iv, struct ecryptfs_crypt_stat *crypt_stat,
 		       loff_t offset);
 
+#ifndef CONFIG_MACH_LGE
 void clean_inode_pages(struct address_space *mapping,
 		pgoff_t start, pgoff_t end);
 
@@ -800,5 +806,5 @@ size_t ecryptfs_get_key_size_to_restore_key(size_t stored_key_size,
 
 bool ecryptfs_check_space_for_salt(const size_t key_size,
 		const size_t salt_size);
-
+#endif
 #endif /* #ifndef ECRYPTFS_KERNEL_H */

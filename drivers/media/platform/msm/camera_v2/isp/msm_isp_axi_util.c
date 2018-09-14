@@ -18,6 +18,10 @@
 
 
 #define ISP_SOF_DEBUG_COUNT 0
+#else
+#define ISP_SOF_DEBUG_COUNT 5
+#endif
+
 static int msm_isp_update_dual_HW_ms_info_at_start(
 	struct vfe_device *vfe_dev,
 	enum msm_vfe_input_src stream_src,

@@ -156,7 +156,11 @@ static int32_t msm_cpp_reset_vbif_and_load_fw(struct cpp_device *cpp_dev);
 	qcmd;			 \
 })
 
+#if 0 //ndef CONFIG_MACH_LGE
 #define MSM_CPP_MAX_TIMEOUT_TRIAL 1
+#else
+#define MSM_CPP_MAX_TIMEOUT_TRIAL 3
+#endif
 
 struct msm_cpp_timer_data_t {
 	struct cpp_device *cpp_dev;

@@ -403,6 +403,17 @@ static int32_t msm_actuator_init_focus(struct msm_actuator_ctrl_t *a_ctrl,
 				settings[i].data_type,
 				settings[i].delay);
 			break;
+#if 1 //def CONFIG_MACH_LGE
+		case MSM_ACT_DELAY:
+			CDBG("Delay. %d\n", settings[i].delay);
+			if (settings[i].delay > 20)
+				msleep(settings[i].delay);
+			else if (0 != settings[i].delay)
+				usleep_range(settings[i].delay * 1000,
+					(settings[i].delay * 1000) + 1000);
+			rc = 0;
+			break;
+#endif
 		default:
 			pr_err("Unsupport i2c_operation: %d\n",
 				settings[i].i2c_operation);

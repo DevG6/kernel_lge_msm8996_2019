@@ -1,3 +1,7 @@
+config MACH_LGE
+	bool "Machine LGE"
+	help
+	  Support for machine LGE.
 
 menu "LGE Specific Patches"
 

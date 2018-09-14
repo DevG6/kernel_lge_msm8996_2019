@@ -1188,6 +1188,9 @@ int subsystem_restart(const char *name)
 }
 EXPORT_SYMBOL(subsystem_restart);
 
+#ifdef CONFIG_MACH_LGE
+	//modem_reboot_cnt--;
+#endif
 int subsystem_crashed(const char *name)
 {
 	struct subsys_device *dev = find_subsys(name);

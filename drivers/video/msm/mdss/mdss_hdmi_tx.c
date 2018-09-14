@@ -3266,7 +3266,24 @@ static irqreturn_t hdmi_tx_isr(int irq, void *data)
 		 * Ack the current hpd interrupt and stop listening to
 		 * new hpd interrupt.
 		 */
+#ifdef CONFIG_MACH_LGE
+		if (1 == hdmi_ctrl->hpd_state) {
+			/*
+			 * Ack the interrupt and enable HPD interrupts
+			 * to make sure to get disconnect interrupt
+			 */
+			DSS_REG_W(io, HDMI_HPD_INT_CTRL, BIT(0) | BIT(2));
+		} else {
+			/*
+			 * Ack the interrupt and enable HPD interrupts
+			 * to make sure to get connect interrup.
+			 */
+			DSS_REG_W(io, HDMI_HPD_INT_CTRL, BIT(0) | BIT(2) | BIT(1));
+		}
+#else
 		DSS_REG_W(io, HDMI_HPD_INT_CTRL, BIT(0));
+#endif
+		pr_err("%s : tx_isr hpd_int_work\n", __func__); /* temporary adding log print for HDMI core doesn't off */
 
 		queue_work(hdmi_ctrl->workq, &hdmi_ctrl->hpd_int_work);
 	}

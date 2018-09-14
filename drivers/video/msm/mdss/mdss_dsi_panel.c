@@ -27,6 +27,11 @@
 #ifdef TARGET_HW_MDSS_HDMI
 #include "mdss_dba_utils.h"
 #endif
+
+#if defined(CONFIG_MACH_LGE)
+struct mdss_panel_data *pdata_base;
+#endif
+
 #define DT_CMD_HDR 6
 #define MIN_REFRESH_RATE 48
 #define DEFAULT_MDP_TRANSFER_TIME 14000
@@ -782,6 +787,9 @@ static void mdss_dsi_panel_bl_ctrl(struct mdss_panel_data *pdata,
 		pr_err("%s: Invalid input data\n", __func__);
 		return;
 	}
+#if defined(CONFIG_MACH_LGE)
+	pdata_base = pdata;
+#endif
 
 	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata,
 				panel_data);
@@ -2878,5 +2886,11 @@ int mdss_dsi_panel_init(struct device_node *node,
 			mdss_dsi_panel_apply_display_setting;
 	ctrl_pdata->switch_mode = mdss_dsi_panel_switch_mode;
 	ctrl_pdata->panel_data.get_idle = mdss_dsi_panel_get_idle_mode;
+#if defined(CONFIG_MACH_LGE)
+	if (ctrl_pdata->panel_data.panel_info.pdest == DISPLAY_1) {
+		if (pdata_base == NULL)
+			pdata_base = &(ctrl_pdata->panel_data);
+	}
+#endif
 	return 0;
 }
