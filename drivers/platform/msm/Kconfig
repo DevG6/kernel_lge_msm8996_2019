@@ -292,6 +292,7 @@ config MSM_11AD
 	tristate "Platform driver for 11ad chip"
 	depends on PCI
 	depends on PCI_MSM
+	depends on !MACH_LGE
 	default y
 	---help---
 	  This module adds required platform support for wireless adapter based on
@@ -308,6 +309,13 @@ config BW_MONITOR
 	 monitored and limited by thermal core framework. It does
 	 it by registering the bus bandwidth as a sensor in
 	 thermal core framework.
+
+config LGE_PM_HARDRESET_MODE
+	boolean"LGE add hardrset mode in hiddenmenu"
+	depends on LGE_PM
+	default n
+	help
+	  LGE implements hardrset mode in hiddenmenu app
 
 source "drivers/platform/msm/spmi/Kconfig"
 
