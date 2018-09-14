@@ -1624,7 +1624,8 @@ int msm_cam_sensor_handle_reg_gpio(int seq_val,
 	CDBG("%s: %d GPIO offset: %d, seq_val: %d\n", __func__, __LINE__,
 		gpio_offset, seq_val);
 
-	if ((gconf->gpio_num_info->valid[gpio_offset] == 1)) {
+	if (gconf->gpio_num_info &&
+		(gconf->gpio_num_info->valid[gpio_offset] == 1)) {
 		gpio_set_value_cansleep(
 			gconf->gpio_num_info->gpio_num
 			[gpio_offset], val);
@@ -1725,7 +1726,7 @@ int msm_camera_power_up(struct msm_camera_power_ctrl_t *ctrl,
 	}
 	rc = msm_camera_request_gpio_table(
 		ctrl->gpio_conf->cam_gpio_req_tbl,
-		ctrl->gpio_conf->cam_gpio_req_tbl_size, 1);
+		ctrl->gpio_conf->cam_gpio_req_tbl_size, 1, ctrl->isDualMode); //LG Change
 	if (rc < 0)
 		no_gpio = rc;
 	if (ctrl->cam_pinctrl_status) {
@@ -1776,6 +1777,14 @@ int msm_camera_power_up(struct msm_camera_power_ctrl_t *ctrl,
 			CDBG("%s:%d gpio set val %d\n", __func__, __LINE__,
 				ctrl->gpio_conf->gpio_num_info->gpio_num
 				[power_setting->seq_val]);
+#if 1
+						if (ctrl->isDualMode == TRUE &&
+								power_setting->seq_val == SENSOR_GPIO_TCS_VANA)
+						{
+							CDBG("%s:%d Skip gpio: SENSOR_GPIO_TCS_VANA (Dual Mode)", __func__, __LINE__);
+							continue;
+						}
+#endif
 			gpio_set_value_cansleep(
 				ctrl->gpio_conf->gpio_num_info->gpio_num
 				[power_setting->seq_val],
@@ -1791,6 +1800,14 @@ int msm_camera_power_up(struct msm_camera_power_ctrl_t *ctrl,
 					SENSOR_GPIO_MAX);
 				goto power_up_failed;
 			}
+#if 1
+						if (ctrl->isDualMode == TRUE &&
+								power_setting->seq_val == CAM_TCS_VIO)
+						{
+							CDBG("%s:%d Skip vreg: CAM_TCS_VIO (Dual Mode)", __func__, __LINE__);
+							continue;
+						}
+#endif
 			if (power_setting->seq_val < ctrl->num_vreg)
 				msm_camera_config_single_vreg(ctrl->dev,
 					&ctrl->cam_vreg
@@ -1899,7 +1916,7 @@ power_up_failed:
 	ctrl->cam_pinctrl_status = 0;
 	msm_camera_request_gpio_table(
 		ctrl->gpio_conf->cam_gpio_req_tbl,
-		ctrl->gpio_conf->cam_gpio_req_tbl_size, 0);
+		ctrl->gpio_conf->cam_gpio_req_tbl_size, 0, 0); //LG Change
 	return rc;
 }
 
@@ -1963,6 +1980,19 @@ int msm_camera_power_down(struct msm_camera_power_ctrl_t *ctrl,
 			if (!ctrl->gpio_conf->gpio_num_info->valid
 				[pd->seq_val])
 				continue;
+#if 1
+			if (ctrl->isDualMode == TRUE &&
+				pd->seq_val == SENSOR_GPIO_TCS_VANA   && ctrl->cameraID== 2 ) {
+				CDBG("%s:%d Skip ID 2 gpio: SENSOR_GPIO_TCS_VANA (Dual Mode)", __func__, __LINE__);
+				continue;
+			}
+
+			if (ctrl->isDualMode == TRUE &&
+				pd->seq_val == SENSOR_GPIO_VANA   && ctrl->cameraID== 0 ) {
+				CDBG("%s:%d Skip ID 0 gpio: SENSOR_GPIO_VANA (Dual Mode)", __func__, __LINE__);
+				continue;
+			}
+#endif
 			gpio_set_value_cansleep(
 				ctrl->gpio_conf->gpio_num_info->gpio_num
 				[pd->seq_val],
@@ -1977,7 +2007,20 @@ int msm_camera_power_down(struct msm_camera_power_ctrl_t *ctrl,
 					SENSOR_GPIO_MAX);
 				continue;
 			}
+#if 1
+			if (ctrl->isDualMode == TRUE&&
+				pd->seq_val == CAM_TCS_VIO   && ctrl->cameraID== 2 ) {
+				CDBG("%s:%d Skip ID 2 vreg: CAM_TCS_VIO (Dual Mode)", __func__, __LINE__);
+				continue;
+			}
 
+			if (ctrl->isDualMode == TRUE &&
+				pd->seq_val == CAM_VIO   && ctrl->cameraID ==0 ) {
+				CDBG("%s:%d Skip ID 0 vreg: CAM_VIO (Dual Mode)", __func__, __LINE__);
+				continue;
+			}
+
+#endif
 			ps = msm_camera_get_power_settings(ctrl,
 						pd->seq_type,
 						pd->seq_val);
@@ -2029,7 +2072,7 @@ int msm_camera_power_down(struct msm_camera_power_ctrl_t *ctrl,
 	ctrl->cam_pinctrl_status = 0;
 	msm_camera_request_gpio_table(
 		ctrl->gpio_conf->cam_gpio_req_tbl,
-		ctrl->gpio_conf->cam_gpio_req_tbl_size, 0);
+		ctrl->gpio_conf->cam_gpio_req_tbl_size, 0, ctrl->isDualMode); //LG Change
 	CDBG("%s exit\n", __func__);
 	return 0;
 }
