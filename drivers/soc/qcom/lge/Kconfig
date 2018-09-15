@@ -595,6 +595,14 @@ config LGE_PM_PSEUDO_BATTERY
 	help
 	  Say Y here to enable pseudo mode setting
 
+config LGE_DEFAULT_HARD_RESET
+	bool "LGE default hard reset"
+	default n
+	depends on MACH_LGE
+	help
+		This make hard reset when rebooting. reboot reason is
+		deliveried by QPNP_PON_SOFT_RB_SPARE[2:7] register.
+
 
 endmenu
 
