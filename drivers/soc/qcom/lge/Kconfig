@@ -603,6 +603,13 @@ config LGE_DEFAULT_HARD_RESET
 		This make hard reset when rebooting. reboot reason is
 		deliveried by QPNP_PON_SOFT_RB_SPARE[2:7] register.
 
+config LGE_ACC_NT
+	tristate "Support NT accessory"
+	depends on MACH_LGE
+	default n
+	help
+	  Say Y here to enable pseudo mode setting
+
 
 endmenu
 
