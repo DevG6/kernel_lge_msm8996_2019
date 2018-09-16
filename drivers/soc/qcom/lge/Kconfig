@@ -632,6 +632,14 @@ config LGE_QSDL_SUPPORT
 	  QSDL is a feature which notify infomation for quality statistics
 	  data logging of device.
 
+config LGE_DM_VERITY_RECOVERY
+	tristate "Support dm verity corrupt recovery"
+	default n
+	depends on MACH_LGE
+	help
+	  Sometimes, dm-bufio has invalid data. If data is corrupted,
+	  try to recover data.
+
 
 endmenu
 
