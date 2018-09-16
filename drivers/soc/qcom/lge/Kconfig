@@ -640,6 +640,12 @@ config LGE_DM_VERITY_RECOVERY
 	  Sometimes, dm-bufio has invalid data. If data is corrupted,
 	  try to recover data.
 
+config LGE_PKM
+    tristate "Support PKM driver with QSEE"
+	depends on MACH_LGE
+	default n
+	help
+	   Say Y here to enable Periodic Kernel Monitoring driver for LG IMA
 
 endmenu
 
