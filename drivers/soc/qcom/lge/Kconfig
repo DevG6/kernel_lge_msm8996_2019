@@ -610,6 +610,13 @@ config LGE_ACC_NT
 	help
 	  Say Y here to enable pseudo mode setting
 
+config PRE_SELF_DIAGNOSIS
+	tristate "Support LGE self diagnosis for factory"
+	default n
+	depends on MACH_LGE
+	help
+	  LGE self diagnosis
+
 
 endmenu
 
