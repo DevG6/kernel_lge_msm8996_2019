@@ -612,7 +612,8 @@ options=( 1 "H872 (G6 T-Mo)"
 	3 "US997 (G6 US)"
 	4 "H918 (V20 T-Mo)"
 	5 "H872 (G6 T-mo Full)"
-        6 "Build All")
+	6 "H872 (G6 Official defconfig)"
+        7 "Build All")
 
 choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
 
@@ -639,11 +640,15 @@ do
 		DEFCONFIG="h872_full_defconfig"
 		break;;
 		
-	6)	VARIANT="msm"
+	6)	VARIANT="h872"
+		DEFCONFIG="lucye_tmo_us-perf_defconfig"
+		break;;
+		
+	7)	VARIANT="msm"
 		DEFCONFIG="msm_defconfig"
 		break;;
 		
-	7) build_all
+	8) build_all
 	  break;;
 		
     esac
