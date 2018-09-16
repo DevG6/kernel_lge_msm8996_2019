@@ -611,7 +611,8 @@ options=( 1 "H872 (G6 T-Mo)"
 	2 "H870 (G6 Global)"
 	3 "US997 (G6 US)"
 	4 "H918 (V20 T-Mo)"
-        5 "Build All")
+	5 "H872 (G6 T-mo Full)"
+        6 "Build All")
 
 choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
 
@@ -634,11 +635,15 @@ do
 		DEFCONFIG="lineageos_h918_defconfig"
 		break;;
 		
-	5)	VARIANT="msm"
+	5)	VARIANT="h872"
+		DEFCONFIG="h872_full_defconfig"
+		break;;
+		
+	6)	VARIANT="msm"
 		DEFCONFIG="msm_defconfig"
 		break;;
 		
-	6) build_all
+	7) build_all
 	  break;;
 		
     esac
