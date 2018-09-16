@@ -719,7 +719,7 @@
 #define TSENS_DBG_BUS_ID_1		1
 #define TSENS_DBG_BUS_ID_2		2
 #define TSENS_DBG_BUS_ID_15		15
-#define TSENS_DEBUG_LOOP_COUNT_ID_0	2
+#define TSENS_DEBUG_LOOP_COUNT_ID_0	30
 #define TSENS_DEBUG_LOOP_COUNT		5
 #define TSENS_DEBUG_STATUS_REG_START	10
 #define TSENS_DEBUG_OFFSET_RANGE	16
@@ -736,8 +736,8 @@
 #define TSENS_DEBUG_BUS_ID2_MAX_CYCLE	51
 #define TSENS_DEBUG_ID_MASK_1_4		0xffffffe1
 
-static uint32_t tsens_sec_to_msec_value = 1000;
-static uint32_t tsens_completion_timeout_hz = HZ/2;
+static uint32_t tsens_sec_to_msec_value = 3000;
+static uint32_t tsens_completion_timeout_hz = 2 * HZ;
 static uint32_t tsens_poll_check = 1;
 
 enum tsens_calib_fuse_map_type {
@@ -2092,7 +2092,16 @@ static void tsens_poll(struct work_struct *work)
 				&tmdev->tsens_rslt_completion,
 				tsens_completion_timeout_hz);
 	if (!rc) {
+#ifdef CONFIG_LGE_PM
+		pr_err("TSENS critical interrupt failed and reschedule it\n");
+		/* This code is not meaningful for debugging delay issue
+		 * ,so skip to execute dump on LGE board and just remain a log.
+		*/
+		if (tsens_poll_check)
+			goto re_schedule;
+#else
 		pr_debug("Switch to polling, TSENS critical interrupt failed\n");
+#endif
 		sensor_status_addr = TSENS_TM_SN_STATUS(tmdev->tsens_addr);
 		sensor_int_mask_addr =
 			TSENS_TM_CRITICAL_INT_MASK(tmdev->tsens_addr);
@@ -5571,6 +5580,9 @@ static int get_device_tree_data(struct platform_device *pdev,
 		tmdev->tsens_type = TSENS_TYPE2;
 	else if (!strcmp(id->compatible, "qcom,msm8996-tsens"))
 		tmdev->tsens_type = TSENS_TYPE3;
+#ifdef CONFIG_LGE_PM
+		/* TODO: Need to check up what to do on tsens_poll_check */
+#endif
 	else if (!strcmp(id->compatible, "qcom,msm8953-tsens") ||
 		(!strcmp(id->compatible, "qcom,msmcobalt-tsens"))) {
 		tmdev->tsens_type = TSENS_TYPE3;
