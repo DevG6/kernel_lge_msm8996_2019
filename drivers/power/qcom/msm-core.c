@@ -1134,4 +1134,4 @@ static int __init msm_core_init(void)
 {
 	return platform_driver_register(&msm_core_driver);
 }
-late_initcall(msm_core_init);
+late_initcall_sync(msm_core_init);
