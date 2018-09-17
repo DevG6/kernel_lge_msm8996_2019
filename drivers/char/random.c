@@ -270,10 +270,8 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/random.h>
 
-#ifdef CONFIG_CRYPTO_CCMODE
 #include <linux/cc_mode.h>
 #define RETRY_CNT_SIZE 300
-#endif //CONFIG_CRYPTO_CCMODE
 /* #define ADD_INTERRUPT_BENCH */
 
 /*
