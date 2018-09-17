@@ -270,6 +270,8 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/random.h>
 
+#include <linux/cc_mode.h>
+#define RETRY_CNT_SIZE 300
 /* #define ADD_INTERRUPT_BENCH */
 
 /*
