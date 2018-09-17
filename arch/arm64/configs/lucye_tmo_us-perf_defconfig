@@ -1,2 +1,4 @@
 include lucye_tmo_us_common
 include lucye_common-perf
+
+CONFIG_DEBUG_SECTION_MISMATCH=y
