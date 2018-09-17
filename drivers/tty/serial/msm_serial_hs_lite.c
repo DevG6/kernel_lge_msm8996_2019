@@ -1973,18 +1973,27 @@ static int msm_serial_hsl_suspend(struct device *dev)
 	port = get_port_from_line(get_line(pdev));
 
 	if (port) {
-
+	/*
+	* ttyHSL can use several lines so line case have to be concerned
+	* ttyHSL0 - lge_console
+	* ttyHSL1 - uart for IrRC
+	*/
+		switch(get_line(pdev)) {
 #ifdef CONFIG_LGE_EARJACK_DEBUGGER
 		case 0:
 			uart_suspend_port(&msm_hsl_uart_driver, port);
 			break;
 #endif
-		if (is_console(port))
+		case 1:
+		default:
+			if (is_console(port))
 			msm_hsl_deinit_clock(port);
 
-		uart_suspend_port(&msm_hsl_uart_driver, port);
-		if (device_may_wakeup(dev))
-			enable_irq_wake(port->irq);
+			uart_suspend_port(&msm_hsl_uart_driver, port);
+			if (device_may_wakeup(dev))
+				enable_irq_wake(port->irq);
+			break;
+		}
 	}
 
 	return 0;
@@ -1997,18 +2006,28 @@ static int msm_serial_hsl_resume(struct device *dev)
 	port = get_port_from_line(get_line(pdev));
 
 	if (port) {
-
+	/*
+	* ttyHSL can use several lines so line case have to be concerned
+	* ttyHSL0 - lge_console
+	* ttyHSL1 - uart for IrRC
+	*/
+		switch(get_line(pdev)) {
 #ifdef CONFIG_LGE_EARJACK_DEBUGGER
 		case 0:
 			if (lge_uart_console_get_enabled())
 				uart_resume_port(&msm_hsl_uart_driver, port);
 			break;
 #endif
-		if (device_may_wakeup(dev))
-			disable_irq_wake(port->irq);
+		case 1:
+		default:
+			uart_resume_port(&msm_hsl_uart_driver, port);
+			if (device_may_wakeup(dev))
+				disable_irq_wake(port->irq);
 
-		if (is_console(port))
-			msm_hsl_init_clock(port);
+			if (is_console(port))
+				msm_hsl_init_clock(port);
+			break;
+		}
 	}
 
 	return 0;
@@ -2025,12 +2044,19 @@ static int msm_hsl_runtime_suspend(struct device *dev)
 	port = get_port_from_line(get_line(pdev));
 
 	dev_dbg(dev, "pm_runtime: suspending\n");
+	if (port) {
+		switch(get_line(pdev)) {
 #ifdef CONFIG_LGE_EARJACK_DEBUGGER
 		case 0:
 			uart_suspend_port(&msm_hsl_uart_driver, port);
 			break;
 #endif
-	msm_hsl_deinit_clock(port);
+		case 1:
+		default:
+			msm_hsl_deinit_clock(port);
+			break;
+		}
+	}
 	return 0;
 }
 
@@ -2041,6 +2067,8 @@ static int msm_hsl_runtime_resume(struct device *dev)
 	port = get_port_from_line(get_line(pdev));
 
 	dev_dbg(dev, "pm_runtime: resuming\n");
+	if (port) {
+		switch(get_line(pdev)) {
 #ifdef CONFIG_LGE_EARJACK_DEBUGGER
 		case 0:
 			if (lge_uart_console_get_enabled()) {
@@ -2048,7 +2076,13 @@ static int msm_hsl_runtime_resume(struct device *dev)
 			}
 			break;
 #endif
-	msm_hsl_init_clock(port);
+		case 1:
+		default:
+			msm_hsl_init_clock(port);
+			break;
+		}
+
+	}
 	return 0;
 }
 
@@ -2101,6 +2135,7 @@ static void __exit msm_serial_hsl_exit(void)
 	uart_unregister_driver(&msm_hsl_uart_driver);
 }
 
+#ifdef CONFIG_SERIAL_EARLYCON
 #define MSM_HSL_UART_SR			0xa4
 #define MSM_HSL_UART_ISR		0xb4
 #define MSM_HSL_UART_TF			0x100
@@ -2142,6 +2177,7 @@ static int __init msm_hsl_earlycon_setup(struct earlycon_device *device,
 }
 EARLYCON_DECLARE(msm_hsl_uart, msm_hsl_earlycon_setup);
 OF_EARLYCON_DECLARE(msm_hsl_uart, "qcom,msm-hsl-uart", msm_hsl_earlycon_setup);
+#endif
 #endif
 
 module_init(msm_serial_hsl_init);
