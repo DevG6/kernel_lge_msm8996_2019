@@ -237,6 +237,22 @@ struct msm_sensor_info_t {
 	enum camb_position_t position;
 };
 
+#if 1 /* CONFIG_LG_OIS */
+struct msm_ois_info_t{
+	char ois_provider[MAX_SENSOR_NAME];
+	int16_t gyro[2];
+	int16_t target[2];
+	int16_t hall[2];
+	uint8_t is_stable;
+};
+
+enum ois_ver_t {
+	OIS_VER_RELEASE,
+	OIS_VER_CALIBRATION,
+	OIS_VER_DEBUG
+};
+#endif
+
 struct camera_vreg_t {
 	const char *reg_name;
 	int min_voltage;
@@ -323,7 +339,7 @@ struct msm_eeprom_cfg_data {
 	enum eeprom_cfg_type_t cfgtype;
 	uint8_t is_supported;
 	union {
-		char eeprom_name[MAX_SENSOR_NAME];
+		char eeprom_name[MAX_EEPROM_NAME];
 		struct eeprom_get_t get_data;
 		struct eeprom_read_t read_data;
 		struct eeprom_write_t write_data;
@@ -359,6 +375,7 @@ enum msm_sensor_cfg_type_t {
 	CFG_SET_AUTOFOCUS,
 	CFG_CANCEL_AUTOFOCUS,
 	CFG_SET_STREAM_TYPE,
+	CFG_GET_SENSER_TEMPERATURE,/*LGE_CHANGE, LG_AF, 2017, By AF Member*/
 	CFG_SET_I2C_SYNC_PARAM,
 	CFG_WRITE_I2C_ARRAY_ASYNC,
 	CFG_WRITE_I2C_ARRAY_SYNC,
@@ -476,6 +493,10 @@ struct msm_ois_params_t {
 
 struct msm_ois_set_info_t {
 	struct msm_ois_params_t ois_params;
+#if 1 /* CONFIG_LG_OIS */
+	struct msm_ois_info_t *ois_info;
+	void	*setting;
+#endif
 };
 
 #if 1 /* CONFIG_MACH_LGE */
@@ -623,6 +644,7 @@ struct msm_ois_slave_info {
 };
 struct msm_ois_cfg_data {
 	int cfgtype;
+	uint16_t eeprom_slave_addr;
 	union {
 		struct msm_ois_set_info_t set_info;
 		struct msm_camera_i2c_seq_reg_setting *settings;

@@ -83,6 +83,7 @@ static int32_t msm_ir_cut_release(
 		return 0;
 	}
 
+	rc = ir_cut_ctrl->func_tbl->camera_ir_cut_on(ir_cut_ctrl, NULL);
 	if (rc < 0) {
 		pr_err("%s:%d camera_ir_cut_on failed rc = %d",
 			__func__, __LINE__, rc);
@@ -102,7 +103,7 @@ static int32_t msm_ir_cut_off(struct msm_ir_cut_ctrl_t *ir_cut_ctrl,
 	if (ir_cut_ctrl->gconf) {
 		rc = msm_camera_request_gpio_table(
 			ir_cut_ctrl->gconf->cam_gpio_req_tbl,
-			ir_cut_ctrl->gconf->cam_gpio_req_tbl_size, 1);
+			ir_cut_ctrl->gconf->cam_gpio_req_tbl_size, 1, 0); //LG Change
 
 		if (rc < 0) {
 			pr_err("ERR:%s:Failed in selecting state: %d\n",
@@ -148,7 +149,7 @@ static int32_t msm_ir_cut_off(struct msm_ir_cut_ctrl_t *ir_cut_ctrl,
 	if (ir_cut_ctrl->gconf) {
 		rc = msm_camera_request_gpio_table(
 			ir_cut_ctrl->gconf->cam_gpio_req_tbl,
-			ir_cut_ctrl->gconf->cam_gpio_req_tbl_size, 0);
+			ir_cut_ctrl->gconf->cam_gpio_req_tbl_size, 0, 0); //LG Change
 
 		if (rc < 0) {
 			pr_err("ERR:%s:Failed in selecting state: %d\n",
@@ -176,7 +177,7 @@ static int32_t msm_ir_cut_on(
 	if (ir_cut_ctrl->gconf) {
 		rc = msm_camera_request_gpio_table(
 			ir_cut_ctrl->gconf->cam_gpio_req_tbl,
-			ir_cut_ctrl->gconf->cam_gpio_req_tbl_size, 1);
+			ir_cut_ctrl->gconf->cam_gpio_req_tbl_size, 1, 0); //LG Change
 
 		if (rc < 0) {
 			pr_err("ERR:%s:Failed in selecting state: %d\n",
@@ -222,7 +223,7 @@ static int32_t msm_ir_cut_on(
 	if (ir_cut_ctrl->gconf) {
 		rc = msm_camera_request_gpio_table(
 			ir_cut_ctrl->gconf->cam_gpio_req_tbl,
-			ir_cut_ctrl->gconf->cam_gpio_req_tbl_size, 0);
+			ir_cut_ctrl->gconf->cam_gpio_req_tbl_size, 0, 0); //LG Change
 
 		if (rc < 0) {
 			pr_err("ERR:%s:Failed in selecting state: %d\n",
@@ -269,6 +270,8 @@ static int32_t msm_ir_cut_handle_init(
 		return -EINVAL;
 	}
 
+	rc = ir_cut_ctrl->func_tbl->camera_ir_cut_init(
+			ir_cut_ctrl, ir_cut_data);
 	if (rc < 0) {
 		pr_err("%s:%d camera_ir_cut_init failed rc = %d",
 			__func__, __LINE__, rc);
