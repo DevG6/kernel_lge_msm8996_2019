@@ -23,7 +23,7 @@
 #endif
 
 #undef CDBG
-#define CDBG(fmt, args...) pr_debug("%s(%d) "fmt, __func__, __LINE__, ##args)
+#define CDBG(fmt, args...) pr_debug(fmt, ##args)
 
 DEFINE_MSM_MUTEX(msm_eeprom_mutex);
 #ifdef CONFIG_COMPAT
@@ -336,13 +336,7 @@ static int eeprom_parse_memory_map(struct msm_eeprom_ctrl_t *e_ctrl,
 {
 	int rc =  0, i, j;
 	uint8_t *memptr;
-	struct msm_eeprom_mem_map_t *eeprom_map = NULL;
-#ifdef CONFIG_LGE_EEPROM
-	#define QUP_SEQ_READ_UNIT 16
-	int loop = 0;
-	int loop_cnt = 0;
-	int remander = 0;
-#endif
+	struct msm_eeprom_mem_map_t *eeprom_map;
 
 	e_ctrl->cal_data.mapdata = NULL;
 	e_ctrl->cal_data.num_data = msm_get_read_mem_size(eeprom_map_array);
@@ -364,20 +358,8 @@ static int eeprom_parse_memory_map(struct msm_eeprom_ctrl_t *e_ctrl,
 			e_ctrl->i2c_client.cci_client->sid =
 				eeprom_map->slave_addr >> 1;
 		} else if (e_ctrl->i2c_client.client) {
-#ifndef CONFIG_LGE_EEPROM
 			e_ctrl->i2c_client.client->addr =
 				eeprom_map->slave_addr >> 1;
-#else
-			if (e_ctrl->eeprom_device_type == MSM_CAMERA_I2C_DEVICE) {
-				//QUP I2C Slave Address is modified in msm_camera_qup_i2c_rxdata()/txdata()
-				e_ctrl->i2c_client.client->addr =
-				eeprom_map->slave_addr;
-			}
-			else {//SPI case
-				e_ctrl->i2c_client.client->addr =
-					eeprom_map->slave_addr >> 1;
-			}
-#endif
 		}
 		CDBG("Slave Addr: 0x%X\n", eeprom_map->slave_addr);
 		CDBG("Memory map Size: %d",
@@ -417,7 +399,6 @@ static int eeprom_parse_memory_map(struct msm_eeprom_ctrl_t *e_ctrl,
 			}
 			break;
 			case MSM_CAM_READ: {
-#ifndef CONFIG_LGE_EEPROM
 				e_ctrl->i2c_client.addr_type =
 					eeprom_map->mem_settings[i].addr_type;
 				rc = e_ctrl->i2c_client.i2c_func_tbl->
@@ -432,65 +413,6 @@ static int eeprom_parse_memory_map(struct msm_eeprom_ctrl_t *e_ctrl,
 					goto clean_up;
 				}
 				memptr += eeprom_map->mem_settings[i].reg_data;
-#else
-				if (e_ctrl->eeprom_device_type == MSM_CAMERA_I2C_DEVICE)
-				{
-					e_ctrl->i2c_client.addr_type = eeprom_map->mem_settings[i].addr_type;
-
-					loop_cnt = (eeprom_map->mem_settings[i].reg_data / QUP_SEQ_READ_UNIT);
-					remander = eeprom_map->mem_settings[i].reg_data % QUP_SEQ_READ_UNIT;
-
-					//CDBG("[CHECK] loop_cnt: %d\n", loop_cnt);
-					//CDBG("[CHECK] remander: %d\n", remander);
-
-					for (loop = 0; loop < loop_cnt; loop++)
-					{
-						rc = e_ctrl->i2c_client.i2c_func_tbl->i2c_read_seq(
-							&(e_ctrl->i2c_client),
-							eeprom_map->mem_settings[i].reg_addr + (loop * QUP_SEQ_READ_UNIT),
-							memptr, QUP_SEQ_READ_UNIT);
-						if (rc < 0) {
-							pr_err("%s: read failed\n", __func__);
-							goto clean_up;
-						}
-
-						memptr += QUP_SEQ_READ_UNIT;
-						//CDBG("[CHECK] memptr: %p\n", memptr);
-					}
-
-					//remainder read
-					{
-						rc = e_ctrl->i2c_client.i2c_func_tbl->i2c_read_seq(
-							&(e_ctrl->i2c_client),
-							eeprom_map->mem_settings[i].reg_addr + (loop_cnt * QUP_SEQ_READ_UNIT),
-							memptr, remander);
-						if (rc < 0) {
-							pr_err("%s: read failed\n", __func__);
-							goto clean_up;
-						}
-
-						memptr += remander;
-						//CDBG("[CHECK] memptr: %p\n", memptr);
-					}
-				}
-				else //QCT Original (CCI or SPI)
-				{
-					e_ctrl->i2c_client.addr_type =
-						eeprom_map->mem_settings[i].addr_type;
-					rc = e_ctrl->i2c_client.i2c_func_tbl->
-						i2c_read_seq(&(e_ctrl->i2c_client),
-						eeprom_map->mem_settings[i].reg_addr,
-						memptr,
-						eeprom_map->mem_settings[i].reg_data);
-					msleep(eeprom_map->mem_settings[i].delay);
-					if (rc < 0) {
-						pr_err("%s: read failed\n",
-							__func__);
-						goto clean_up;
-					}
-					memptr += eeprom_map->mem_settings[i].reg_data;
-				}
-#endif
 			}
 			break;
 			default:
@@ -975,8 +897,7 @@ static int msm_eeprom_i2c_probe(struct i2c_client *client,
 	}
 	e_ctrl->eeprom_v4l2_subdev_ops = &msm_eeprom_subdev_ops;
 	e_ctrl->eeprom_mutex = &msm_eeprom_mutex;
-	CDBG("%s client = 0x%p\n", __func__, client);
-
+	CDBG("%s client = 0x%pK\n", __func__, client);
 #if 0 //ndef CONFIG_MACH_LGE
 	e_ctrl->eboard_info = (struct msm_eeprom_board_info *)(id->driver_data);
 	if (!e_ctrl->eboard_info) {
@@ -1704,17 +1625,6 @@ static int eeprom_init_config32(struct msm_eeprom_ctrl_t *e_ctrl,
 	if (rc < 0)
 		pr_err("%s:%d Power down failed rc %d\n",
 			__func__, __LINE__, rc);
-
-#ifdef CONFIG_MACH_MSM8996_LUCYE
-	pr_err("%s:%d e_ctrl->eeprom_device_type %d\n",
-				__func__, __LINE__, e_ctrl->eeprom_device_type);
-    if(e_ctrl->eeprom_device_type)
-		msm_eeprom_set_maker_id(e_ctrl->cal_data.mapdata[EEPROM_OFFSET_MODULE_MAKER]);
-	else
-		msm_eeprom_set_maker_id(e_ctrl->cal_data.mapdata[EEPROM_OFFSET_MODULE_MAKER1]);
-#else
-	msm_eeprom_set_maker_id(e_ctrl->cal_data.mapdata[EEPROM_OFFSET_MODULE_MAKER]);
-#endif
 
 free_mem:
 	kfree(power_setting_array32);

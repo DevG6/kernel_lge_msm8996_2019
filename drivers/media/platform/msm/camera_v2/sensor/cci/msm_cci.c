@@ -119,10 +119,6 @@ static int32_t msm_cci_set_clk_param(struct cci_device *cci_dev,
 	enum cci_i2c_master_t master = c_ctrl->cci_info->cci_i2c_master;
 	enum i2c_freq_mode_t i2c_freq_mode = c_ctrl->cci_info->i2c_freq_mode;
 
-#if !defined (CONFIG_MACH_MSM8996_LUCYE)
-	i2c_freq_mode = I2C_FAST_MODE;
-#endif
-
 	if ((i2c_freq_mode >= I2C_MAX_MODES) || (i2c_freq_mode < 0)) {
 		pr_err("%s:%d invalid i2c_freq_mode = %d",
 			__func__, __LINE__, i2c_freq_mode);
@@ -1392,7 +1388,7 @@ static int32_t msm_cci_init(struct v4l2_subdev *sd,
 		cci_dev->cci_pinctrl_status = 1;
 	}
 	rc = msm_camera_request_gpio_table(cci_dev->cci_gpio_tbl,
-		cci_dev->cci_gpio_tbl_size, 1, 0); //LG Change
+		cci_dev->cci_gpio_tbl_size, 1);
 	if (cci_dev->cci_pinctrl_status) {
 		ret = pinctrl_select_state(cci_dev->cci_pinctrl.pinctrl,
 				cci_dev->cci_pinctrl.gpio_state_active);
@@ -1537,7 +1533,7 @@ clk_enable_failed:
 				__func__, __LINE__);
 	}
 	msm_camera_request_gpio_table(cci_dev->cci_gpio_tbl,
-		cci_dev->cci_gpio_tbl_size, 0, 0); //LG Change
+		cci_dev->cci_gpio_tbl_size, 0);
 request_gpio_failed:
 	cci_dev->ref_count--;
 	if (cam_config_ahb_clk(NULL, 0, CAM_AHB_CLIENT_CCI,
@@ -1590,7 +1586,7 @@ static int32_t msm_cci_release(struct v4l2_subdev *sd)
 	}
 	cci_dev->cci_pinctrl_status = 0;
 	msm_camera_request_gpio_table(cci_dev->cci_gpio_tbl,
-		cci_dev->cci_gpio_tbl_size, 0, 0); // LG Change
+		cci_dev->cci_gpio_tbl_size, 0);
 	for (i = 0; i < MASTER_MAX; i++)
 		cci_dev->i2c_freq_mode[i] = I2C_MAX_MODES;
 	cci_dev->cci_state = CCI_STATE_DISABLED;

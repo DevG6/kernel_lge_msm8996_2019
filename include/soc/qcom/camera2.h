@@ -111,11 +111,6 @@ struct msm_camera_power_ctrl_t {
 	struct msm_pinctrl_info pinctrl_info;
 	uint8_t cam_pinctrl_status;
 	size_t clk_info_size;
-#if 1
-		bool isDualMode;
-		int cameraID;
-#endif
-
 };
 
 enum msm_camera_actuator_name {
